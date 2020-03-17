@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <script>
+        var bits = 8;
+        var arrA = new Array(bits);
+        var arrB = new Array(bits);
+        var powTwo = new Array(bits); // 0 2 4 8 16 32 64 128 ...
+
+        function randomArray() {
+            var array = new Array(bits);
+
+            for (var i = 0; i < array.length; i++) {
+                Math.random() < 0.5 ? array[i] = 1 : array[i] = 0;
+            }
+
+            return array;
+        }
+        
+        function calcBinaryToDecimal(array) {
+            var value = 0;
+            var powTwo = [0, 2, 4, 8, 16, 32, 64, 128];
+
+            for (var j = 0; j < array.length; j++) {
+                if (array[j] == 1) {
+                    value += powTwo[j];
+                }
+            }
+
+            return value;
+        }
+
+        arrA = randomArray();
+        arrB = randomArray();
+
+        var valueA = calcBinaryToDecimal(arrA);
+        var valueB = calcBinaryToDecimal(arrB);
+
+        console.log(arrA);
+        console.log(valueA);
+        console.log(arrB);
+        console.log(valueB);
+    </script>
+</body>
+
+</html>
