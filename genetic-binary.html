@@ -7,26 +7,38 @@
 
 <body>
     <script>
-        var bits = 8;
-        var arrA = new Array(bits);
-        var arrB = new Array(bits);
-        var powTwo = new Array(bits); // 0 2 4 8 16 32 64 128 ...
+        var bits;
+        var powTwo;
+        var prob_mutacao;
+
+        function init() {
+            bits = 8;
+            arrA = new Array(bits);
+            arrB = new Array(bits);
+            powTwo = [0, 2];
+            prob_mutacao = 0.2;
+
+            for (let i = 1; i < bits - 1; i++) {
+                let res = powTwo[i] * 2;
+                powTwo[i + 1] = res;
+            }
+
+        }
 
         function randomArray() {
-            var array = new Array(bits);
+            let array = new Array(bits);
 
-            for (var i = 0; i < array.length; i++) {
+            for (let i = 0; i < bits; i++) {
                 Math.random() < 0.5 ? array[i] = 1 : array[i] = 0;
             }
 
             return array;
         }
-        
-        function calcBinaryToDecimal(array) {
-            var value = 0;
-            var powTwo = [0, 2, 4, 8, 16, 32, 64, 128];
 
-            for (var j = 0; j < array.length; j++) {
+        function calcBinaryToDecimal(array) {
+            let value = 0;
+
+            for (let j = 0; j < array.length; j++) {
                 if (array[j] == 1) {
                     value += powTwo[j];
                 }
@@ -35,16 +47,153 @@
             return value;
         }
 
-        arrA = randomArray();
-        arrB = randomArray();
+        function cruzamento(arrayA, arrayB) {
+            var auxA = JSON.parse(JSON.stringify(arrayA));
+            var auxB = JSON.parse(JSON.stringify(arrayB));
+            let corteA;
+            let corteB;
 
-        var valueA = calcBinaryToDecimal(arrA);
-        var valueB = calcBinaryToDecimal(arrB);
+            corteA = auxA.splice(auxA.length - 2, auxA.length);
+            corteB = auxB.splice(auxB.length - 2, auxB.length);
 
-        console.log(arrA);
-        console.log(valueA);
-        console.log(arrB);
-        console.log(valueB);
+            auxA = auxA.splice(0, auxA.length).concat(corteB);
+            auxB = auxB.splice(0, auxB.length).concat(corteA);
+
+            return [auxA, auxB];
+        }
+
+        function mutacao(array) {
+            let gene = Math.floor(Math.random() * array.length);
+
+            if (array[gene] == 0) {
+                array[gene] = 1;
+            } else {
+                array[gene] = 0;
+            }
+
+            return array;
+        }
+
+        function obterPontuacao(array) {
+            let cont = 0;
+
+            for (let i = 0; i < array.length; i++) {
+                if (array[i] == 1) {
+                    cont++;
+                }
+            }
+
+            return cont;
+        }
+
+        function obterMelhor(populacao) {
+            let indice_melhor;
+            let pontuacao_melhor = obterPontuacao(populacao[0]);
+            indice_melhor = 0;
+
+            for (let i = 1; i < populacao.length; i++) {
+                let pontuacao = obterPontuacao(populacao[i]);
+
+                if (pontuacao > pontuacao_melhor) {
+                    indice_melhor = i;
+                    pontuacao_melhor = pontuacao;
+                }
+            }
+
+            return indice_melhor;
+        }
+
+        function gerarFilhos(populacao, tam_pop) {
+            var paiA;
+            var paiB;
+            var filhoA;
+            var filhoB;
+
+            for (let i = 0; i < tam_pop; i = i + 2) {
+                // pais
+                paiA = populacao[i];
+                paiB = populacao[i + 1];
+
+                // filhos
+                let crossing = cruzamento(paiA, paiB);
+
+                filhoA = crossing[0];
+                filhoB = crossing[1];
+
+                // mutação
+                let prob = Math.random();
+
+                if (prob < prob_mutacao) {
+                    mutacao(filhoA);
+                    mutacao(filhoB);
+                }
+
+                // insere filhos na população
+                populacao.push(filhoA);
+                populacao.push(filhoB);
+            }
+        }
+
+        function getPontuacoes(populacao, deleteCount) {
+            var pontuacoes = new Array();
+
+            for (let i = 0; i < populacao.length; i++) {
+                let pont = obterPontuacao(populacao[i]);
+                pontuacoes.push({
+                    pont,
+                    i
+                });
+            }
+
+            pontuacoes.sort(function (a, b) {
+                var keyA = a.pont,
+                    keyB = b.pont;
+
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+            });
+
+            pontuacoes.splice(0, deleteCount);
+
+            return pontuacoes;
+        }
+
+        function main() {
+            // first gen
+            var arrA = randomArray();
+            var arrB = randomArray();
+
+            var populacao = new Array();
+
+            populacao.push(arrA);
+            populacao.push(arrB);
+
+            gerarFilhos(populacao, 98);
+
+            // obter pontuacao os 50 melhores dos 100
+            var pontuacoes = getPontuacoes(populacao, 75);
+
+            // Second gen
+            var newPopulacao = new Array();
+            for (let i = 0; i < pontuacoes.length; i++) {
+                newPopulacao.push(populacao[pontuacoes[i].i]);
+            }
+
+            gerarFilhos(newPopulacao, 49);
+            
+            var pontuacoes2 = getPontuacoes(newPopulacao, 50);
+            
+            var newPopulacao2 = new Array();
+            for (let i = 0; i < pontuacoes2.length; i++) {
+                newPopulacao2.push(newPopulacao[pontuacoes2[i].i]);
+            }
+
+            console.log(newPopulacao2);
+        }
+
+        init();
+        main();
     </script>
 </body>
 
