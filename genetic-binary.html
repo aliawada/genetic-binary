@@ -70,8 +70,6 @@
             } else {
                 array[gene] = 0;
             }
-
-            return array;
         }
 
         function obterPontuacao(array) {
@@ -87,20 +85,17 @@
         }
 
         function obterMelhor(populacao) {
-            let indice_melhor;
             let pontuacao_melhor = obterPontuacao(populacao[0]);
-            indice_melhor = 0;
 
             for (let i = 1; i < populacao.length; i++) {
                 let pontuacao = obterPontuacao(populacao[i]);
 
                 if (pontuacao > pontuacao_melhor) {
-                    indice_melhor = i;
                     pontuacao_melhor = pontuacao;
                 }
             }
 
-            return indice_melhor;
+            return pontuacao_melhor;
         }
 
         function gerarFilhos(populacao, tam_pop) {
@@ -108,6 +103,15 @@
             var paiB;
             var filhoA;
             var filhoB;
+
+            if (populacao.length == 0) {
+                let arrA = randomArray();
+                let arrB = randomArray();
+
+                populacao.push(arrA);
+                populacao.push(arrB);
+                tam_pop = tam_pop - 2;
+            }
 
             for (let i = 0; i < tam_pop; i = i + 2) {
                 // pais
@@ -160,36 +164,41 @@
         }
 
         function main() {
-            // first gen
-            var arrA = randomArray();
-            var arrB = randomArray();
-
+            var melhor = 0;
+            var tam_pop = 100;
             var populacao = new Array();
+            var pontuacoes = new Array();
+            var deleteCount = 75;
+            var geracoes = 0;
 
-            populacao.push(arrA);
-            populacao.push(arrB);
+            do {
+                geracoes++;
+                gerarFilhos(populacao, tam_pop);
 
-            gerarFilhos(populacao, 98);
+                pontuacoes = getPontuacoes(populacao, deleteCount);
 
-            // obter pontuacao os 50 melhores dos 100
-            var pontuacoes = getPontuacoes(populacao, 75);
+                auxPopulacao = JSON.parse(JSON.stringify(populacao));
+                populacao = [];
 
-            // Second gen
-            var newPopulacao = new Array();
-            for (let i = 0; i < pontuacoes.length; i++) {
-                newPopulacao.push(populacao[pontuacoes[i].i]);
-            }
+                for (let i = 0; i < pontuacoes.length; i++) {
+                    populacao.push(auxPopulacao[pontuacoes[i].i]);
+                }
 
-            gerarFilhos(newPopulacao, 49);
-            
-            var pontuacoes2 = getPontuacoes(newPopulacao, 50);
-            
-            var newPopulacao2 = new Array();
-            for (let i = 0; i < pontuacoes2.length; i++) {
-                newPopulacao2.push(newPopulacao[pontuacoes2[i].i]);
-            }
+                melhor = obterMelhor(populacao);
 
-            console.log(newPopulacao2);
+                console.log('Geração:', geracoes);
+                console.log('Melhor Pontuacao', melhor);
+                console.log(populacao);
+                
+                // emergency exit to not break browser
+                if (geracoes == 10) {
+                    console.log('NOT');
+                    break;
+                }
+                
+            } while (melhor != bits)
+
+            console.log('SUCCESS');
         }
 
         init();
